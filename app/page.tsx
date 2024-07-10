@@ -1,11 +1,18 @@
 "use client";
 import anime from "animejs/lib/anime.es.js";
-import { MouseEventHandler, TouchEventHandler, useRef } from "react";
+import { MouseEventHandler, TouchEventHandler, useRef, useState } from "react";
 
 const COIN_ROTATION_THRESHOLD = 50;
 
 export default function Home() {
-  const imageRef = useRef(null);
+  const imageRef = useRef<HTMLImageElement>(null);
+  const [numberPosition, setNumberPosition] = useState<
+    {
+      x: number;
+      y: number;
+      id: number;
+    }[]
+  >([]);
 
   const handleTouch: React.TouchEventHandler<HTMLImageElement> = (event) => {
     const {
@@ -106,7 +113,7 @@ export default function Home() {
       COIN_ROTATION_THRESHOLD / 2
     ).toFixed(2);
 
-    imageRef.current.style.transform = `perspective(${clientWidth}px) scale3d(1, 1, 1)`;
+    imageRef.current!.style.transform = `perspective(${clientWidth}px) scale3d(1, 1, 1)`;
 
     anime({
       targets: imageRef.current,
@@ -131,6 +138,39 @@ export default function Home() {
     touches,
     currentTarget: { clientWidth, clientHeight, offsetLeft, offsetTop },
   }) => {
+    const newTouches: {
+      x: number;
+      y: number;
+      id: number;
+    }[] = [];
+
+    for (let i = 0; i < touches.length; i++) {
+      const { clientX, clientY } = touches[i];
+
+      newTouches.push({
+        id: numberPosition.length + 1 + i,
+        x: clientX,
+        y: clientY,
+      });
+
+      setTimeout(() => {
+        anime({
+          targets: `#reward-${numberPosition.length + 1 + i}`,
+          translateY: -150,
+          opacity: 0,
+          duration: 1000,
+          easing: "easeInOutQuad",
+          complete: function (anim) {
+            anim.animatables.forEach((animatable) => {
+              animatable.target.remove();
+            });
+          },
+        });
+      }, 0);
+    }
+
+    setNumberPosition([...numberPosition, ...newTouches]);
+
     if (touches.length !== 1) return;
 
     const { clientX, clientY } = touches[0];
@@ -147,7 +187,7 @@ export default function Home() {
       COIN_ROTATION_THRESHOLD / 2
     ).toFixed(2);
 
-    imageRef.current.style.transform = `perspective(${clientWidth}px) scale3d(1, 1, 1)`;
+    imageRef.current!.style.transform = `perspective(${clientWidth}px) scale3d(1, 1, 1)`;
 
     anime({
       targets: imageRef.current,
@@ -171,22 +211,38 @@ export default function Home() {
   return (
     <>
       <div
-        className="h-full"
+        className="h-full lg:p-40 p-10 md:p-20 relative"
         onTouchStart={handleTouchStart}
         style={{ width: "100%", height: "100%", objectFit: "contain" }}
       >
-        <div className="max-w-96 mx-auto mt-40">
-          <img
-            src="/images/coin.png"
-            alt="coin"
-            className="select-none coin"
-            ref={imageRef}
+        <img
+          src="/images/coin.png"
+          alt="coin"
+          className="select-none coin w-full"
+          ref={imageRef}
+          style={{
+            transform: "scale3d(1,1,1)",
+          }}
+          draggable={false}
+        />
+        {numberPosition.map((position) => (
+          <div
+            key={position.id}
+            id={`reward-${position.id}`}
+            className="number-animation"
             style={{
-              transform: "scale3d(1,1,1)",
+              position: "absolute",
+              fontSize: 40,
+              color: "white",
+              left: position.x,
+              top: position.y,
+              backgroundColor: "transparent",
+              zIndex: 10, // Ensure it's above other content
             }}
-            draggable={false}
-          />
-        </div>
+          >
+            +1
+          </div>
+        ))}
       </div>
     </>
   );

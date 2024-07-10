@@ -8,9 +8,14 @@ html {
   font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji",
     "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  padding: 0;
+  touch-action: none;
 }
 
 body {
   @apply leading-normal tracking-normal text-indigo-400 m-6 bg-cover bg-fixed;
   background-image: url("/header.png");
+  margin: 0;
+  padding: 0;
+  touch-action: none;
 }
